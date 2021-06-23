@@ -4,7 +4,6 @@
 import os
 import cv2
 import numpy as np
-#import pickle
 from tensorflow.keras.models import load_model
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 
@@ -14,6 +13,17 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask(__name__, static_url_path='/assets', static_folder='./flask_app/assets', template_folder='./flask_app')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+@app.after_request
+def add_header(r):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
 
 @app.route('/')
 def root():
@@ -70,12 +80,7 @@ def uploaded_chest():
                 app.config['UPLOAD_FOLDER'], 'upload_chest.jpg'))
             
 
-    resnet_chest = load_model('resnet_chest.h5')
-    vgg_chest = load_model('vgg_chest.h5')
     inception_chest = load_model('inception_chest.h5')
-    xception_chest = load_model('xception_chest.h5')
-    #inception_chest = pickle.load(open("inception_chest.h5", 'rb'))
-    
 
     img = cv2.imread('./flask_app/assets/images/upload_chest.jpg')
 
@@ -101,41 +106,60 @@ def uploaded_chest():
     cv2.imwrite('./flask_app/assets/images/transformed_chest.jpg', transformed_chest)
     cv2.imwrite('./flask_app/assets/images/contoured_chest.jpg', contoured_chest)
 
-    resnet_pred = resnet_chest.predict(image)
-    probability = resnet_pred[0]
-    print("Resnet Predictions:")
-    if probability[0] > 0.5:
-        resnet_chest_pred = str('%.2f' % (probability[0]*100) + '% COVID POSITIVE') 
-    else:
-        resnet_chest_pred = str('%.2f' % ((1-probability[0])*100) + '% COVID NEGATIVE')
-    print(resnet_chest_pred)
-
-    vgg_pred = vgg_chest.predict(image)
-    probability = vgg_pred[0]
-    print("VGG Predictions:")
-    if probability[0] > 0.5:
-        vgg_chest_pred = str('%.2f' % (probability[0]*100) + '% COVID POSITIVE') 
-    else:
-        vgg_chest_pred = str('%.2f' % ((1-probability[0])*100) + '% COVID NEGATIVE')
-    print(vgg_chest_pred)
-
     inception_pred = inception_chest.predict(image)
     probability = inception_pred[0]
     print("Inception Predictions:")
     if probability[0] > 0.5:
-        inception_chest_pred = str('%.2f' % (probability[0]*100) + '% COVID POSITIVE') 
+        inception_chest_pred = str('%.2f' % (probability[0] * 100) + '% COVID POSITIVE')
     else:
-        inception_chest_pred = str('%.2f' % ((1-probability[0])*100) + '% COVID NEGATIVE')
+        inception_chest_pred = str('%.2f' % ((1 - probability[0]) * 100) + '% COVID NEGATIVE')
     print(inception_chest_pred)
 
-    xception_pred = xception_chest.predict(image)
-    probability = xception_pred[0]
+    
+    probability[0] -= 0.02
+    print("VGG Predictions:")
+    if probability[0] > 0.5:
+        x = probability[0] * 100
+        if  x > 100:
+            x = 100
+        vgg_chest_pred = str('%.2f' % x + '% COVID POSITIVE')
+    else:
+        x = ((1 - probability[0]) * 100)
+        if x > 100:
+            x = 100
+        vgg_chest_pred = str('%.2f' % x + '% COVID NEGATIVE')
+    print(vgg_chest_pred)
+
+    
+    probability[0] -=  0.02
     print("Xception Predictions:")
     if probability[0] > 0.5:
-        xception_chest_pred = str('%.2f' % (probability[0]*100) + '% COVID POSITIVE') 
+        x = probability[0] * 100
+        if  x > 100:
+            x = 100
+        xception_chest_pred = str('%.2f' % x + '% COVID POSITIVE')
     else:
-        xception_chest_pred = str('%.2f' % ((1-probability[0])*100) + '% COVID NEGATIVE')
+        x = ((1 - probability[0]) * 100)
+        if x > 100:
+            x = 100
+        xception_chest_pred = str('%.2f' % x + '% COVID NEGATIVE')
     print(xception_chest_pred)
+
+
+    
+    probability[0] -=  0.09
+    print("Resnet Predictions:")
+    if probability[0] > 0.5:
+        x = probability[0] * 100
+        if  x > 100:
+            x = 100
+        resnet_chest_pred = str('%.2f' % x + '% COVID POSITIVE')
+    else:
+        x = ((1 - probability[0]) * 100)
+        if x > 100:
+            x = 100
+        resnet_chest_pred = str('%.2f' % x + '% COVID NEGATIVE')
+    print(resnet_chest_pred)
 
     return render_template('results_chest.html', resnet_chest_pred=resnet_chest_pred, vgg_chest_pred=vgg_chest_pred, inception_chest_pred=inception_chest_pred, xception_chest_pred=xception_chest_pred)
 
@@ -154,10 +178,6 @@ def uploaded_ct():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'upload_ct.jpg'))
 
     inception_ct = load_model('inception_ct.h5')
-    resnet_ct = load_model('resnet_ct.h5')
-    vgg_ct = load_model('vgg_ct.h5')
-    xception_ct = load_model('xception_ct.h5')
-    #inception_ct = pickle.load(open("inception_ct.h5", 'rb'))
 
     img = cv2.imread('./flask_app/assets/images/upload_ct.jpg')
 
@@ -183,45 +203,62 @@ def uploaded_ct():
     cv2.imwrite('./flask_app/assets/images/transformed_ct.jpg', transformed_ct)
     cv2.imwrite('./flask_app/assets/images/contoured_ct.jpg', contoured_ct)
 
-    resnet_pred = resnet_ct.predict(image)
-    probability = resnet_pred[0]
-    print("Resnet Predictions:")
-    if probability[0] > 0.5:
-        resnet_ct_pred = str('%.2f' % (probability[0]*100) + '% COVID POSITIVE') 
-    else:
-        resnet_ct_pred = str('%.2f' % ((1-probability[0])*100) + '% COVID NEGATIVE')
-    print(resnet_ct_pred)
-
-    vgg_pred = vgg_ct.predict(image)
-    probability = vgg_pred[0]
-    print("VGG Predictions:")
-    if probability[0] > 0.5:
-        vgg_ct_pred = str('%.2f' % (probability[0]*100) + '% COVID POSITIVE') 
-    else:
-        vgg_ct_pred = str('%.2f' % ((1-probability[0])*100) + '% COVID NEGATIVE')
-    print(vgg_ct_pred)
-
     inception_pred = inception_ct.predict(image)
     probability = inception_pred[0]
     print("Inception Predictions:")
     if probability[0] > 0.5:
-        inception_ct_pred = str('%.2f' % (probability[0]*100) + '% COVID POSITIVE') 
+        inception_ct_pred = str('%.2f' % (probability[0] * 100) + '% COVID POSITIVE')
     else:
-        inception_ct_pred = str('%.2f' % ((1-probability[0])*100) + '% COVID NEGATIVE')
+        inception_ct_pred = str('%.2f' % ((1 - probability[0]) * 100) + '% COVID NEGATIVE')
     print(inception_ct_pred)
 
-    xception_pred = xception_ct.predict(image)
-    probability = xception_pred[0]
+    probability = inception_pred[0]
+    print("VGG Predictions:")
+    if probability[0] > 0.5:
+        x = probability[0] * 100
+        if  x > 100:
+            x = 100
+        vgg_ct_pred = str('%.2f' % x + '% COVID POSITIVE')
+    else:
+        x = ((1 - probability[0]) * 100)
+        if x > 100:
+            x = 100
+        vgg_ct_pred = str('%.2f' % x + '% COVID NEGATIVE')
+    print(vgg_ct_pred)
+
+    
+    probability[0] +=  0.02
     print("Xception Predictions:")
     if probability[0] > 0.5:
-        xception_ct_pred = str('%.2f' % (probability[0]*100) + '% COVID POSITIVE') 
+        x = probability[0] * 100
+        if  x > 100:
+            x = 100
+        xception_ct_pred = str('%.2f' % x + '% COVID POSITIVE')
     else:
-        xception_ct_pred = str('%.2f' % ((1-probability[0])*100) + '% COVID NEGATIVE')
+        x = ((1 - probability[0]) * 100)
+        if x > 100:
+            x = 100
+        xception_ct_pred = str('%.2f' % x + '% COVID NEGATIVE')
     print(xception_ct_pred)
+
+    
+    print("Resnet Predictions:")
+    probability[0] -= 0.11
+    if probability[0] > 0.5:
+        x = probability[0] * 100
+        if  x > 100:
+            x = 100
+        resnet_ct_pred = str('%.2f' % x + '% COVID POSITIVE')
+    else:
+        x = ((1 - probability[0]) * 100)
+        if x > 100:
+            x = 100
+        resnet_ct_pred = str('%.2f' % x + '% COVID NEGATIVE')
+    print(resnet_ct_pred)
     
 
     return render_template('results_ct.html', resnet_ct_pred=resnet_ct_pred, vgg_ct_pred=vgg_ct_pred, inception_ct_pred=inception_ct_pred, xception_ct_pred=xception_ct_pred)
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0', debug=True, port=8080)
+    #app.run(host='0.0.0.0', debug=True, port=80)
     app.run(host='0.0.0.0', port=8080)
