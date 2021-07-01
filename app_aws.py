@@ -260,5 +260,5 @@ def uploaded_ct():
     return render_template('results_ct.html', resnet_ct_pred=resnet_ct_pred, vgg_ct_pred=vgg_ct_pred, inception_ct_pred=inception_ct_pred, xception_ct_pred=xception_ct_pred)
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0', debug=True, port=80)
+    #app.run(host='0.0.0.0', debug=True, 
     app.run(host='0.0.0.0', port=8080)
