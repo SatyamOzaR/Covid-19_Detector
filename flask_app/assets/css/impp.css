@@ -85,7 +85,7 @@ background: linear-gradient(90deg, rgba(51,186,236,1) 2%, rgba(225,231,236,1) 50
   margin: 10px 10px 10px 10px;
 }
 .r4{
-  background: rgb(51,186,236);
+  bbackground: rgb(51,186,236);
 background: linear-gradient(90deg, rgba(51,186,236,1) 2%, rgba(225,231,236,1) 50%);
   color: #000;
   font-family: 'Josefin Sans', sans-serif !important;
@@ -102,4 +102,13 @@ div.sticky {
 .u5{
   background: rgb(255,241,241);
 background: linear-gradient(90deg, rgba(255,241,241,1) 29%, rgba(223,238,241,1) 88%);
+}
+@media (min-width:300px) and (max-width:900px){
+  .banner-one{
+    background-color: #0C4271 !important;
+    }
+    #e2{
+    margin-left: 3rem;
+    text-align: center;
+    }
 }
