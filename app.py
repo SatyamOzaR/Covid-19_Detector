@@ -11,6 +11,7 @@ Team Name  - Team OneShot
 import os
 import cv2
 import numpy as np
+from time import time
 from tensorflow.keras.models import load_model
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 
@@ -73,6 +74,7 @@ def upload_ct():
 # When User Chooses the X-ray this method will be called
 @app.route('/uploaded_chest', methods=['POST', 'GET'])
 def uploaded_chest():
+    t_init = time()
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No file part')
@@ -158,12 +160,18 @@ def uploaded_chest():
             '%.2f' % ((1 - probability[0]) * 100) + '% COVID NEGATIVE')
     print(vgg_chest_pred)
 
-    return render_template('results_chest.html', resnet_chest_pred=resnet_chest_pred, vgg_chest_pred=vgg_chest_pred, inception_chest_pred=inception_chest_pred, xception_chest_pred=xception_chest_pred)
+    t_final = time()
+
+    elapsed_time = t_final - t_init
+    elapsed_min = int(elapsed_time // 60)
+    elapsed_sec = int(elapsed_time % 60)
+
+    return render_template('results_chest.html', resnet_chest_pred=resnet_chest_pred, vgg_chest_pred=vgg_chest_pred, inception_chest_pred=inception_chest_pred, xception_chest_pred=xception_chest_pred, elapsed_min=elapsed_min, elapsed_sec=elapsed_sec)
 
 # When User Chooses the CT-scan this method will be called
 @app.route('/uploaded_ct', methods=['POST', 'GET'])
 def uploaded_ct():
-    f = 0
+    t_init = time()
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No file part')
@@ -247,9 +255,15 @@ def uploaded_ct():
         xception_ct_pred = str(
             '%.2f' % ((1 - probability[0]) * 100) + '% COVID NEGATIVE')
     print(xception_ct_pred)
+
+    t_final = time()
+
+    elapsed_time = t_final - t_init
+    elapsed_min = int(elapsed_time // 60)
+    elapsed_sec = int(elapsed_time % 60)
     
 
-    return render_template('results_ct.html', resnet_ct_pred=resnet_ct_pred, vgg_ct_pred=vgg_ct_pred, inception_ct_pred=inception_ct_pred, xception_ct_pred=xception_ct_pred)
+    return render_template('results_ct.html', resnet_ct_pred=resnet_ct_pred, vgg_ct_pred=vgg_ct_pred, inception_ct_pred=inception_ct_pred, xception_ct_pred=xception_ct_pred, elapsed_min=elapsed_min, elapsed_sec=elapsed_sec)
 
 if __name__ == '__main__':
     #app.run(host='0.0.0.0', debug=True, port=80)
