@@ -1,30 +1,39 @@
 # Flask Application Script
 
+''' This Application Script is created as a part of Mini-Project of 6th Semester
+MVJ College of Engineering Under Visvesvaraya Technological University
+Department of Electronics and Communication Engineering
+Team Name  - Team OneShot
+1MJ18EC122 - Satyam Oza R
+1MJ18EC123 - Shankar S'''
 
+# Import necessary modules
 import os
 import cv2
 import numpy as np
 from tensorflow.keras.models import load_model
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 
+# Defining Path of Assets Folder
 UPLOAD_FOLDER = './flask_app/assets/images'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
+# Creating Application Object Using Flask
 app = Flask(__name__, static_url_path='/assets', static_folder='./flask_app/assets', template_folder='./flask_app')
 
+# Configuring the Assets Path
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Function to Set Cache-Configuration to 'no-cache' in our case
 @app.after_request
 def add_header(r):
-    """
-    Add headers to both force latest IE rendering engine or Chrome Frame,
-    and also to cache the rendered page for 10 minutes.
-    """
     r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     r.headers["Pragma"] = "no-cache"
     r.headers["Expires"] = "0"
     r.headers['Cache-Control'] = 'public, max-age=0'
     return r
 
+# Routing default to 'index.html'
 @app.route('/')
 def root():
     return render_template('index.html')
@@ -36,10 +45,6 @@ def index():
 @app.route('/contact.html')
 def contact():
     return render_template('contact.html')
-
-'''@app.route('/news.html')
-def news():
-    return render_template('news.html')'''
 
 @app.route('/about.html')
 def about():
@@ -65,6 +70,7 @@ def upload_chest():
 def upload_ct():
     return render_template('upload_ct.html')
 
+# When User Chooses the X-ray this method will be called
 @app.route('/uploaded_chest', methods=['POST', 'GET'])
 def uploaded_chest():
     if request.method == 'POST':
@@ -79,13 +85,16 @@ def uploaded_chest():
             file.save(os.path.join(
                 app.config['UPLOAD_FOLDER'], 'upload_chest.jpg'))
             
-
+    # Loading Model to the Runtime
     inception_chest = load_model('inception_chest.h5')
 
+    # Converting Image to Processable format
     img = cv2.imread('./flask_app/assets/images/upload_chest.jpg')
 
+    # Resizing the Input Image
     cv2.resize(img, (224, 224))
 
+    # Performing the Image Processing Using OpenCV
     transformed_chest = cv2.applyColorMap(img, cv2.COLORMAP_HSV)
     transformed_chest = cv2.resize(transformed_chest, (224, 224))
 
@@ -106,6 +115,7 @@ def uploaded_chest():
     cv2.imwrite('./flask_app/assets/images/transformed_chest.jpg', transformed_chest)
     cv2.imwrite('./flask_app/assets/images/contoured_chest.jpg', contoured_chest)
 
+    # Predicting the Probability of the result case
     inception_pred = inception_chest.predict(image)
     probability = inception_pred[0]
     print("Inception Predictions:")
@@ -163,7 +173,7 @@ def uploaded_chest():
 
     return render_template('results_chest.html', resnet_chest_pred=resnet_chest_pred, vgg_chest_pred=vgg_chest_pred, inception_chest_pred=inception_chest_pred, xception_chest_pred=xception_chest_pred)
 
-
+# When User Chooses the CT-scan this method will be called
 @app.route('/uploaded_ct', methods=['POST', 'GET'])
 def uploaded_ct():
     if request.method == 'POST':
@@ -177,12 +187,16 @@ def uploaded_ct():
         if file:
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'upload_ct.jpg'))
 
+    # Loading Models to the Runtime
     inception_ct = load_model('inception_ct.h5')
 
+    # Converting Image to Processable format
     img = cv2.imread('./flask_app/assets/images/upload_ct.jpg')
 
+    # Resizing the Input Image
     cv2.resize(img, (224, 224))
 
+    # Performing the Image Processing Using OpenCV
     transformed_ct = cv2.applyColorMap(img, cv2.COLORMAP_HSV)
     transformed_ct = cv2.resize(transformed_ct, (224, 224))
 
@@ -203,6 +217,7 @@ def uploaded_ct():
     cv2.imwrite('./flask_app/assets/images/transformed_ct.jpg', transformed_ct)
     cv2.imwrite('./flask_app/assets/images/contoured_ct.jpg', contoured_ct)
 
+    # Predicting the Probability of the result case
     inception_pred = inception_ct.predict(image)
     probability = inception_pred[0]
     print("Inception Predictions:")
@@ -260,5 +275,5 @@ def uploaded_ct():
     return render_template('results_ct.html', resnet_ct_pred=resnet_ct_pred, vgg_ct_pred=vgg_ct_pred, inception_ct_pred=inception_ct_pred, xception_ct_pred=xception_ct_pred)
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0', debug=True, port=80)
+    #app.run(host='0.0.0.0', debug=True, 
     app.run(host='0.0.0.0', port=8080)
