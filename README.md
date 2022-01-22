@@ -45,7 +45,7 @@ This command will install all necessary packages to run the Web-App
  
  * Create Your AWS-EC2 instance (Ubuntu Only):
  
-  <a href="https://docs.aws.amazon.com/efs/latest/ug/gs-step-one-create-ec2-resources.html" target="_blank">Create AWS-EC2 Instance</a>
+    <a href="https://docs.aws.amazon.com/efs/latest/ug/gs-step-one-create-ec2-resources.html" target="_blank">Create AWS-EC2 Instance</a>
  
  * Now ```SSH``` into your instance using any method, I prefer to use ```WinSCP``` and ```PuTTY``` software using windows but you can follow any oher methods too, If you are using ```PuTTY``` make sure you convert ```.pem``` access key to ```.ppk``` using ```PuTTYgen``` software
  
